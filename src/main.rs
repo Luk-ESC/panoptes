@@ -1,13 +1,12 @@
-use std::{borrow::Cow, io::ErrorKind, os::unix::fs::symlink, path::Path};
+use std::{io::ErrorKind, os::unix::fs::symlink, path::Path};
 
+use chrono::{DateTime, Utc};
 use fanotify::{
     high_level::{Fanotify, FanotifyMode},
     low_level::FAN_CLOSE_WRITE,
 };
 
-fn build_tree(path: &Path, pid: i32) {
-    let base = Path::new("/persistent/panoptes");
-
+fn build_tree(path: &Path, pid: i32, base: &Path) {
     let mut path = base.join(path.strip_prefix("/").unwrap());
     path.push("");
 
@@ -40,6 +39,11 @@ fn main() {
     let fa = Fanotify::new_blocking(FanotifyMode::NOTIF).unwrap();
     fa.add_mountpoint(FAN_CLOSE_WRITE, "/").unwrap();
 
+    let age = std::fs::metadata("/").unwrap().created().unwrap();
+    let age: DateTime<Utc> = age.into();
+    let age = age.format("%Y-%m-%d_%H:%M:%S").to_string();
+
+    let new_out_path = Path::new("/persistent/panoptes").join(age);
     let my_pid = std::process::id() as i32;
     println!("Started listening! (my pid: {my_pid})");
 
@@ -50,7 +54,7 @@ fn main() {
                 continue;
             }
 
-            build_tree(Path::new(&i.path), i.pid);
+            build_tree(Path::new(&i.path), i.pid, &new_out_path);
         }
     }
 }
