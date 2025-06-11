@@ -1,0 +1,7 @@
+[package]
+name = "panoptes"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+fanotify-rs = "0.3.1"
