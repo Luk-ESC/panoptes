@@ -6,7 +6,7 @@ use fanotify::{
 };
 
 fn build_tree(path: &Path, pid: i32) {
-    let base = Path::new("out/");
+    let base = Path::new("/persistent/panoptes");
 
     let mut path = base.join(path.strip_prefix("/").unwrap());
     path.push("");
