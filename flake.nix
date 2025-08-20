@@ -24,14 +24,10 @@
 
         naersk' = pkgs.callPackage naersk { };
       in
-      rec {
+      {
         # For `nix build` & `nix run`:
         defaultPackage = naersk'.buildPackage {
           src = ./.;
-
-          postInstall = ''
-            #wrapProgram $out/bin/panoptes --SET WHAT bruh
-          '';
         };
 
         # For `nix develop`:
@@ -42,30 +38,23 @@
           ];
         };
 
-        nixosModules = {
-          panoptes-service =
-            {
-              config,
-              pkgs,
-              lib,
-              ...
-            }:
-            {
-              options = { };
-              config = {
-                systemd.services.panoptes = {
-                  description = "Panoptes Background Service";
-                  after = [ "network.target" ];
-                  wantedBy = [ "multi-user.target" ];
+        nixosModules.panoptes-service =
+          {
+            pkgs,
+            ...
+          }:
+          {
+            systemd.services.panoptes = {
+              description = "Panoptes Background Service";
+              after = [ "network.target" ];
+              wantedBy = [ "multi-user.target" ];
 
-                  serviceConfig = {
-                    ExecStart = "${self.defaultPackage.${pkgs.system}}/bin/panoptes";
-                    Restart = "on-failure";
-                  };
-                };
+              serviceConfig = {
+                ExecStart = "${self.defaultPackage.${pkgs.system}}/bin/panoptes";
+                Restart = "on-failure";
               };
             };
-        };
+          };
       }
     );
 }
