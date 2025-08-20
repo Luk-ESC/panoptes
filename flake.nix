@@ -1,6 +1,10 @@
 {
   inputs = {
-    flake-utils.url = "github:numtide/flake-utils";
+    systems.url = "github:nix-systems/default";
+    flake-utils = {
+      url = "github:numtide/flake-utils";
+      inputs.systems.follows = "systems";
+    };
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     naersk = {
       url = "github:nix-community/naersk";
@@ -14,6 +18,7 @@
       flake-utils,
       naersk,
       nixpkgs,
+      ...
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
