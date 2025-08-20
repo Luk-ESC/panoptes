@@ -8,20 +8,23 @@
     };
   };
 
-  outputs = {
-    self,
-    flake-utils,
-    naersk,
-    nixpkgs,
-  }:
+  outputs =
+    {
+      self,
+      flake-utils,
+      naersk,
+      nixpkgs,
+    }:
     flake-utils.lib.eachDefaultSystem (
-      system: let
+      system:
+      let
         pkgs = (import nixpkgs) {
           inherit system;
         };
 
-        naersk' = pkgs.callPackage naersk {};
-      in rec {
+        naersk' = pkgs.callPackage naersk { };
+      in
+      rec {
         # For `nix build` & `nix run`:
         defaultPackage = naersk'.buildPackage {
           src = ./.;
@@ -33,30 +36,35 @@
 
         # For `nix develop`:
         devShell = pkgs.mkShell {
-          nativeBuildInputs = with pkgs; [rustc cargo];
+          nativeBuildInputs = with pkgs; [
+            rustc
+            cargo
+          ];
         };
 
         nixosModules = {
-          panoptes-service = {
-            config,
-            pkgs,
-            lib,
-            ...
-          }: {
-            options = {};
-            config = {
-              systemd.services.panoptes = {
-                description = "Panoptes Background Service";
-                after = ["network.target"];
-                wantedBy = ["multi-user.target"];
+          panoptes-service =
+            {
+              config,
+              pkgs,
+              lib,
+              ...
+            }:
+            {
+              options = { };
+              config = {
+                systemd.services.panoptes = {
+                  description = "Panoptes Background Service";
+                  after = [ "network.target" ];
+                  wantedBy = [ "multi-user.target" ];
 
-                serviceConfig = {
-                  ExecStart = "${self.defaultPackage.${pkgs.system}}/bin/panoptes";
-                  Restart = "on-failure";
+                  serviceConfig = {
+                    ExecStart = "${self.defaultPackage.${pkgs.system}}/bin/panoptes";
+                    Restart = "on-failure";
+                  };
                 };
               };
             };
-          };
         };
       }
     );
